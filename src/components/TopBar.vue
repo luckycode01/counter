@@ -11,15 +11,16 @@
           <div></div>
         </div>
         <div class="close fl">
-          <div></div>
+          <div class="close-1"></div>
+          <div class="close-2"></div>
         </div>
       </div>
     </div>
   </div>
 </template>
-<style>
+<style scoped>
 .layout {
-  width: 400px;
+  width: 800px;
   height: 35px;
   background-color: #e6e6e6;
   position: relative;
@@ -67,5 +68,22 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+}
+.right .close ::before,
+.right .close ::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 15px;
+  background: #8e8e8e;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+.right .close ::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.right .close ::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 </style>
