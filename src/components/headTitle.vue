@@ -7,8 +7,10 @@
         <div class="content">
           <div class="content-show"></div>
         </div>
+        <side-bar></side-bar>
         <div class="title">标准</div>
       </div>
+
       <div class="right" @click="myClick">
         <h4 class="active">历史记录</h4>
         <h4>记忆</h4>
@@ -17,7 +19,11 @@
   </div>
 </template>
 <script>
+import SideBar from '../components/Sidebar.vue';
 export default {
+  components: {
+    SideBar,
+  },
   methods: {
     // 点击事件，下边框线高亮
     myClick(event) {
@@ -59,6 +65,7 @@ export default {
   position: relative;
   width: 40px;
   height: 100%;
+  z-index: 200;
 }
 .content:hover {
   background-color: #cccccc;
