@@ -42,6 +42,12 @@ img {
 li {
   list-style-type: none;
 }
+.layout {
+  width: 800px;
+  position: relative;
+  margin: 0 auto;
+  line-height: 35px;
+}
 .clearfix::before {
   content: "";
   height: 0;

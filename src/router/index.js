@@ -12,6 +12,13 @@ const router = new Router({
       path: '/',
       name: 'Index',
       component: Index,
+      children: [
+        {
+          path: '/shownum',
+          name: 'shownum',
+          component: () => import('../components/showNum.vue'),
+        },
+      ],
     },
   ],
 });
