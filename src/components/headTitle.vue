@@ -26,7 +26,7 @@ export default {
   },
   data() {
     return {
-      isShow: false,
+      isShow: true,
     }
   },
   methods: {
@@ -50,7 +50,7 @@ export default {
     sidebarNone() {
       // const menu = document.querySelector('.menu');
       // menu.style.display = 'none';
-      this.isShow = false;
+      this.isShow = true;
 
     }
   }
