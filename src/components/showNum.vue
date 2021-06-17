@@ -4,7 +4,7 @@
       <!-- 数字显示 -->
       <div class="result">
         <div class="formula"></div>
-        <div class="num">0</div>
+        <div class="numText">0</div>
       </div>
       <!-- 特殊符号 -->
       <div class="sign">
@@ -13,9 +13,9 @@
         </div>
       </div>
       <!-- 数字和符号 -->
-      <div class="sign-num">
+      <div class="sign-num" @click="getNumSign">
         <div
-          :class="item.backColor ? 'colorGrey' : 'colorWhite'"
+          :class="item.backColor ? 'sign-content' : 'num-content'"
           v-for="(item, index) in contentList"
           :key="index"
         >
@@ -130,7 +130,111 @@ export default {
       ]
     }
   },
+  methods: {
+    init() {
+      // 运算符映射
+      const op = {
+        'plus': '+',
+        'minus': '-',
+        'mul': '*',
+        'div': '/'
+
+      };
+      const opArr = ['+', '-', '*', '/'];
+
+      // 中缀表达式
+      const infix = [];
+      // 后缀表达式
+      const suffix = [];
+      // 后缀表达式运算结果集
+      const result = [];
+      // 存储最近的值
+      const lastVal = 0;
+      // 当前已经计算等于完成
+      const calcDone = false;
+      // 当前正在进行小数点点（.）相关值的修正
+      const curDot = false;
+
+    },
+
+    getNumSign(e) {
+      // const formula = document.querySelector('.content .result .formula');
+      // const numText = document.querySelector('.content .result .numText');
+      e = e || window.event;
+      const elem = e.target || e.srcElement;
+      let val;
+      if (elem.nodeName === 'SPAN') {
+        // 获取点击对象的值
+        val = elem.innerHTML;
+        // 判断点击的是不是数字
+        if (!isNaN(parseInt(val, 10))) {
+          // 构建中缀表达式并显示
+          // const infixRe =
+          // 是数字就显示在上方
+
+        }
+      }
+    },
+
+    // 中缀表达式
+    /**
+     * val 值
+     * type 操作（增删...）
+     */
+    buildInfix(val, type) {
+      // 直接点击等号运算
+
+      let newVal;
+      // 删除操作
+      if (type === 'del') {
+        // 删除中缀表达式的最后一个数，并返回 
+        newVal = this.infix.pop();
+        // 删除末尾的一个数字
+        newVal = Math.floor(newVal / 10);
+        if (newVal) {
+          this.infix.push(newVal);
+        }
+        this.lastVal = this.infix[this.infix.length - 1];
+
+        return this.infix;
+
+      }
+      // 添加操作 ，判断是不是重复的运算符
+      else if (type === "add") {
+        // 判断点击的内容，如果是俩个连续的运算符
+        if (this.isSign(val) && this.isSign(lastVal)) {
+          return this.infix;
+        }
+        //两个连续的数字
+        else if (!this.isSign(val) && !this.isSign(this.lastVal)) {
+          newVal = this.lastVal * 10 + val;
+          this.infix.pop();
+          this.infix.push(this.lastVal = newVal);
+
+          return this.infix;
+        }
+      }
+    },
+
+    // 判断是否为运算符
+    isSign(op) {
+      // const op = {
+      //   'plus': '+',
+      //   'minus': '-',
+      //   'mul': '*',
+      //   'div': '/'
+      // };
+      // const opArr = ['+', '-', '*', '/'];
+      return op && this.opArr.indexOf(op) !== -1;
+      console.log(this.op);
+    }
+  },
+  mounted() {
+    this.init();
+  }
 }
+
+
 </script>
 <style scoped>
 .layout {
@@ -158,12 +262,17 @@ export default {
   font-weight: 400;
   font-family: Arial, Helvetica, sans-serif;
 }
-.content .result .num {
+.content .result .numText {
   line-height: 40px;
   margin: 10px 0;
   font-size: 48px;
   font-weight: 500;
   color: black;
+}
+.content span {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .sign {
   margin-top: 20px;
@@ -190,10 +299,10 @@ export default {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-.sign-num .colorGrey {
+.sign-num .sign-content {
   background-color: #dfdfdf;
 }
-.sign-num .colorWhite {
+.sign-num .num-content {
   font-weight: 500;
   background-color: #f5f5f5;
 }

@@ -1,23 +1,25 @@
 <template>
   <!-- 侧边栏 -->
   <div class="menu clearfix">
-    <div class="content-detail">
-      <h4>计算器</h4>
-      <ul>
-        <li
-          v-for="(item, index) in contentList"
-          :key="index"
-          :class="item.isSelect ? 'active' : ''"
-        >
-          <i class="iconfont">{{ item.icon }}</i> {{ item.title }}
-        </li>
-      </ul>
-      <h4>转换器</h4>
-      <ul>
-        <li v-for="(item, index) in changeList" :key="index">
-          <i class="iconfont">{{ item.icon }}</i> {{ item.title }}
-        </li>
-      </ul>
+    <div class="menu-layout">
+      <div class="content-detail">
+        <h4>计算器</h4>
+        <ul>
+          <li
+            v-for="(item, index) in contentList"
+            :key="index"
+            :class="item.isSelect ? 'active' : ''"
+          >
+            <i class="iconfont">{{ item.icon }}</i> {{ item.title }}
+          </li>
+        </ul>
+        <h4>转换器</h4>
+        <ul>
+          <li v-for="(item, index) in changeList" :key="index">
+            <i class="iconfont">{{ item.icon }}</i> {{ item.title }}
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="scrollIn">
       <div class="slide"></div>
@@ -122,7 +124,7 @@ export default {
       const content = document.querySelector('.content-detail');
       // 滑块高度/滑槽高度 = 滑槽高度/内容高度 = 滑块滚动的距离 / 内容滚动的距离
       // 滑块高度/内容高度
-      const slideContent = scrollIn.offsetHeight / content.scrollHeight;
+      const slideContent = scrollIn.offsetHeight / content.offsetHeight;
       // 求滑块的高度
       const slideHeight = slideContent * scrollIn.offsetHeight;
       slide.style.height = slideHeight + 'px';
@@ -133,7 +135,6 @@ export default {
       function wheelMove(event) {
         event = event || window.event;
         let flag = false;
-        console.log(event.wheelDelta);
         //向下滚为负
         if (event.wheelDelta) {
           // 向上滚，滑块向上，内容向下
@@ -172,15 +173,12 @@ export default {
           slide.style.top = lastY + 'px'
         }
       }
-
-
-
     }
   },
   // 页面加载啊完后调用
   mounted() {
     this.scrollSlide();
-  },
+  }
 }
 </script>
 <style scoped>
@@ -195,14 +193,22 @@ export default {
   top: 0px;
   box-shadow: 1px -1px 4px rgba(0, 0, 0, 0.3);
 }
-
-.menu .content-detail {
+.menu-layout {
   position: absolute;
   top: 50px;
   width: 100%;
   height: 580px;
   background-color: #e6e6e6;
   overflow: hidden;
+}
+
+.menu .content-detail {
+  position: absolute;
+  /* top: 50px; */
+  width: 100%;
+  height: 820px;
+  background-color: #e6e6e6;
+  /* overflow: hidden; */
 }
 .menu .content-detail h4 {
   width: 100%;
@@ -211,9 +217,6 @@ export default {
   font-size: 14px;
   font-weight: 600;
 }
-/* .menu .content-detail h4:first-child {
-  margin-top: 20px;
-} */
 .menu .content-detail ul li {
   position: relative;
   width: 100%;
@@ -272,7 +275,7 @@ export default {
 
 .scrollIn .slide {
   width: 3px;
-  height: 100px;
+  /* height: 100px; */
   position: absolute;
   top: 0;
   left: 50%;

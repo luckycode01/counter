@@ -6,7 +6,9 @@
       <div class="content" @mouseenter="sidebarShow" @mouseleave="sidebarNone">
         <div class="content-show"></div>
         <transition name="show">
-          <div v-show="isShow"><side-bar></side-bar></div>
+          <div v-if="isShow" class="select">
+            <side-bar ref="sild"></side-bar>
+          </div>
         </transition>
       </div>
       <div class="title">标准</div>
@@ -26,7 +28,7 @@ export default {
   },
   data() {
     return {
-      isShow: true,
+      isShow: false,
     }
   },
   methods: {
@@ -44,13 +46,13 @@ export default {
     },
     sidebarShow() {
       // const menu = document.querySelector('.menu');
+      // menu.style.display = 'block';
       this.isShow = true;
-
     },
     sidebarNone() {
       // const menu = document.querySelector('.menu');
       // menu.style.display = 'none';
-      this.isShow = true;
+      this.isShow = false;
 
     }
   }
@@ -101,6 +103,10 @@ export default {
   left: 10px;
   transform: translateY(-50%);
   z-index: 900;
+}
+.select {
+  height: 680px;
+  width: 260px;
 }
 .left .title {
   position: absolute;
