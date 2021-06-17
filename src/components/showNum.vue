@@ -13,7 +13,7 @@
         </div>
       </div>
       <!-- 数字和符号 -->
-      <div class="sign-num" @click="getNumSign">
+      <div class="sign-num">
         <div
           :class="item.backColor ? 'sign-content' : 'num-content'"
           v-for="(item, index) in contentList"
@@ -131,109 +131,114 @@ export default {
     }
   },
   methods: {
-    init() {
-      // 运算符映射
-      const op = {
-        'plus': '+',
-        'minus': '-',
-        'mul': '*',
-        'div': '/'
+    fun() {
+      function Calculator() {
 
-      };
-      const opArr = ['+', '-', '*', '/'];
+        this.signNum = document.querySelector('.sign-num');
+        // 运算符映射
+        this.op = {
+          'plus': '+',
+          'minus': '-',
+          'mul': '*',
+          'div': '/'
 
-      // 中缀表达式
-      const infix = [];
-      // 后缀表达式
-      const suffix = [];
-      // 后缀表达式运算结果集
-      const result = [];
-      // 存储最近的值
-      const lastVal = 0;
-      // 当前已经计算等于完成
-      const calcDone = false;
-      // 当前正在进行小数点点（.）相关值的修正
-      const curDot = false;
+        };
+        this.opArr = ['+', '-', '*', '/'];
 
-    },
+        // 中缀表达式
+        this.infix = [];
+        // // 后缀表达式
+        // this.suffix = [];
+        // // 后缀表达式运算结果集
+        // this.result = [];
+        // // 存储最近的值
+        this.lastVal = 0;
+        // // 当前已经计算等于完成
+        // this.calcDone = false;
+        // // 当前正在进行小数点点（.）相关值的修正
+        // this.curDot = false;
 
-    getNumSign(e) {
-      // const formula = document.querySelector('.content .result .formula');
-      // const numText = document.querySelector('.content .result .numText');
-      e = e || window.event;
-      const elem = e.target || e.srcElement;
-      let val;
-      if (elem.nodeName === 'SPAN') {
-        // 获取点击对象的值
-        val = elem.innerHTML;
-        // 判断点击的是不是数字
-        if (!isNaN(parseInt(val, 10))) {
-          // 构建中缀表达式并显示
-          // const infixRe =
-          // 是数字就显示在上方
+        this.init();
+      }
 
+      Calculator.prototype = {
+        constructor: Calculator,
+        // 初始化
+        init: function () {
+          this.bindEvent();
+        },
+        // 绑定事件
+        bindEvent: function () {
+          const _this = this;
+          _this.signNum.onclick = function (e) {
+            e = e || window.event;
+            const elem = e.target || e.srcElement;
+            let val;
+            if (elem.nodeName === 'SPAN') {
+              // 获取点击对象的值
+              val = elem.innerHTML;
+              // 判断点击的是不是数字
+              if (!isNaN(parseInt(val, 10))) {
+                // 构建中缀表达式并显示
+                const infixRe = _this.buildInfix(parseInt(val, 10), 'add');
+                console.log(infixRe);
+                // 是数字就显示在上方
+
+              }
+            }
+          }
+        },
+        buildInfix: function (val, type) {
+          // 直接点击等号运算
+
+          let newVal;
+          // 删除操作
+          if (type === 'del') {
+            // 删除中缀表达式的最后一个数，并返回 
+            newVal = this.infix.pop();
+            // 删除末尾的一个数字
+            newVal = Math.floor(newVal / 10);
+            if (newVal) {
+              this.infix.push(newVal);
+            }
+            this.lastVal = this.infix[this.infix.length - 1];
+
+            return this.infix;
+
+          }
+          // 添加操作 ，判断是不是重复的运算符
+          else if (type === "add") {
+            // 判断点击的内容，如果是俩个连续的运算符
+            if (this.isSign(val) && this.isSign(this.lastVal)) {
+              return this.infix;
+            }
+            //两个连续的数字
+            else if (!this.isSign(val) && !this.isSign(this.lastVal)) {
+              newVal = this.lastVal * 10 + val;
+              this.infix.pop();
+              this.infix.push(this.lastVal = newVal);
+
+              return this.infix;
+            }
+            // 首个数字是正负数
+            if (!this.isOp(val) && this.infix.length === 1 && (this.lastVal === '+' || this.lastVal === '-')) {
+
+            }
+          }
+        },
+
+        isSign: function (op) {
+          return op && this.opArr.indexOf(op) !== -1;
         }
       }
-    },
 
-    // 中缀表达式
-    /**
-     * val 值
-     * type 操作（增删...）
-     */
-    buildInfix(val, type) {
-      // 直接点击等号运算
-
-      let newVal;
-      // 删除操作
-      if (type === 'del') {
-        // 删除中缀表达式的最后一个数，并返回 
-        newVal = this.infix.pop();
-        // 删除末尾的一个数字
-        newVal = Math.floor(newVal / 10);
-        if (newVal) {
-          this.infix.push(newVal);
-        }
-        this.lastVal = this.infix[this.infix.length - 1];
-
-        return this.infix;
-
-      }
-      // 添加操作 ，判断是不是重复的运算符
-      else if (type === "add") {
-        // 判断点击的内容，如果是俩个连续的运算符
-        if (this.isSign(val) && this.isSign(lastVal)) {
-          return this.infix;
-        }
-        //两个连续的数字
-        else if (!this.isSign(val) && !this.isSign(this.lastVal)) {
-          newVal = this.lastVal * 10 + val;
-          this.infix.pop();
-          this.infix.push(this.lastVal = newVal);
-
-          return this.infix;
-        }
-      }
-    },
-
-    // 判断是否为运算符
-    isSign(op) {
-      // const op = {
-      //   'plus': '+',
-      //   'minus': '-',
-      //   'mul': '*',
-      //   'div': '/'
-      // };
-      // const opArr = ['+', '-', '*', '/'];
-      return op && this.opArr.indexOf(op) !== -1;
-      console.log(this.op);
+      new Calculator();
     }
   },
   mounted() {
-    this.init();
+    this.fun();
   }
 }
-
 
 </script>
 <style scoped>
