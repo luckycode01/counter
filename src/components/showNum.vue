@@ -15,6 +15,7 @@
       <!-- 数字和符号 -->
       <div class="sign-num">
         <div
+          :style="item.fontColor"
           :class="item.backColor ? 'sign-content' : 'num-content'"
           v-for="(item, index) in contentList"
           :key="index"
@@ -37,6 +38,10 @@ export default {
       {
         num: 'CE',
         backColor: true,
+        fontColor: {
+          color: '#a3a3a3'
+        }
+
       },
       {
         num: 'C',
@@ -47,7 +52,7 @@ export default {
         backColor: true,
       },
       {
-        num: '1\u2044x',
+        num: '1/X',
         backColor: true,
       },
       {
@@ -55,7 +60,7 @@ export default {
         backColor: true,
       },
       {
-        num: '\u221Ax',
+        num: '√x',
         backColor: true,
       },
       {
@@ -134,28 +139,33 @@ export default {
     fun() {
       function Calculator() {
 
+        // 显示区 表达式dom
+        this.formula = document.querySelector('.content .result .formula');
+        // 显示区 数字dom
+        this.numText = document.querySelector('.content .result .numText');
+        // 数字和运算符dom
         this.signNum = document.querySelector('.sign-num');
         // 运算符映射
         this.op = {
-          'plus': '+',
-          'minus': '-',
-          'mul': '*',
-          'div': '/'
+          '+': '+',
+          '-': '-',
+          '×': '×',
+          '÷': '÷'
 
         };
-        this.opArr = ['+', '-', '*', '/'];
+        this.opArr = ['+', '-', '×', '÷'];
 
         // 中缀表达式
         this.infix = [];
         // // 后缀表达式
-        // this.suffix = [];
-        // // 后缀表达式运算结果集
-        // this.result = [];
-        // // 存储最近的值
+        this.suffix = [];
+        // 后缀表达式运算结果集
+        this.result = [];
+        // 存储最近的值
         this.lastVal = 0;
-        // // 当前已经计算等于完成
-        // this.calcDone = false;
-        // // 当前正在进行小数点点（.）相关值的修正
+        // 当前已经计算等于完成
+        this.calcDone = false;
+        // 当前正在进行小数点点（.）相关值的修正
         // this.curDot = false;
 
         this.init();
@@ -178,27 +188,122 @@ export default {
               // 获取点击对象的值
               val = elem.innerHTML;
               // 判断点击的是不是数字
-              if (!isNaN(parseInt(val, 10))) {
+              if (!isNaN(Number(val))) {
                 // 构建中缀表达式并显示
                 const infixRe = _this.buildInfix(parseInt(val, 10), 'add');
-                console.log(infixRe);
                 // 是数字就显示在上方
+                _this.formula.innerHTML = infixRe.join('');
+                _this.numText.innerHTML = _this.lastVal;
+
+                // _this.calculate();
+                return;
+              }
+
+              let action = val;
+
+              // 清除  删除  计算  等于
+              if (['DEL', 'C', '='].indexOf(action) !== -1) {
+                //当中缀表达式没有任何值时直接返回
+                if (!_this.infix.length) {
+                  return;
+                }
+                // 清空数据
+                if (action === 'C' || (action === "DEL" && _this.calcDone)) {
+                  _this.formula.innerHTML = "";
+                  _this.numText.innerHTML = 0;
+                  _this.resetData();
+                }
+                // 清除数据
+                else if (action === 'DEL') {
+                  const infixRe = _this.buildInfix(_this.op[action], "DEL");
+                  _this.formula.innerHTML = infixRe.join('');
+                  if (!_this.isSign(_this.lastVal)) {
+                    _this.numText.innerHTML = _this.lastVal;
+                  }
+                  else {
+                    _this.numText.innerHTML = 0;
+                  }
+                  // _this.calculate();
+                }
+                // 等号
+                else if (action === '=') {
+                  _this.calculate('=');
+                }
+              }
+              // % 小数点 平方 符号运算
+              else if (['%', '.', 'X²', '√x', '1/X'].indexOf(action) !== -1) {
+                if (!_this.infix.length || _this.isSign(_this.lastVal)) {
+                  return;
+                }
+                if (action === '%') {
+                  _this.lastVal /= 100;
+                }
+                else if (action === 'X²') {
+                  _this.lastVal *= _this.lastVal;
+                }
+                else if (action === '√x') {
+                  _this.lastVal = Math.sqrt(_this.lastVal);
+
+                }
+                else if (action === '1/X') {
+                  _this.lastVal = 1 / _this.lastVal;
+
+                }
+                // else if (action === '.') {
+                //   _this.curDot = true;
+                // }
+                // 重写中缀表达式
+                const infixRe = _this.buildInfix(_this.lastVal, 'change');
+                _this.formula.innerHTML = infixRe.join('');
+
+                _this.calculate();
 
               }
+              // 运算符+ - * /
+              else if (_this.isSign(_this.op[action])) {
+                if (!_this.infix.length && (_this.op[action] === '×' || _this.op[action] === '÷')) {
+                  return;
+                }
+                const infixRe = _this.buildInfix(_this.op[action], 'add');
+                _this.formula.innerHTML = infixRe.join('');
+              }
+
             }
           }
         },
         buildInfix: function (val, type) {
           // 直接点击等号运算
+          if (this.calcDone) {
+            this.calcDone = false;
+            // 再点击数字，进行新的运算
+            if (!this.isSign(val)) {
+              this.resetData();
+            }
+            else {
+              // 如果是运算符，使用当前的结果进行运算
+              const re = this.result[0];
+              this.resetData();
+              this.infix.push(re);
+            }
+          }
 
           let newVal;
           // 删除操作
-          if (type === 'del') {
+          if (type === 'DEL') {
             // 删除中缀表达式的最后一个数，并返回 
             newVal = this.infix.pop();
-            // 删除末尾的一个数字
-            newVal = Math.floor(newVal / 10);
-            if (newVal) {
+            // 取出的如果为数字
+            if (!isNaN(newVal)) {
+              newVal = Math.floor(newVal / 10);
+              if (newVal !== 0) {
+                this.infix.push(newVal);
+              }
+              else {
+                this.infix.push(0);
+              }
+            }
+            else {
+              // 不为数字
               this.infix.push(newVal);
             }
             this.lastVal = this.infix[this.infix.length - 1];
@@ -221,14 +326,122 @@ export default {
               return this.infix;
             }
             // 首个数字是正负数
-            if (!this.isOp(val) && this.infix.length === 1 && (this.lastVal === '+' || this.lastVal === '-')) {
+            if (!this.isSign(val) && this.infix.length === 1 && (this.lastVal === '+' || this.lastVal === '-')) {
+              newVal = this.lastVal === "+" ? val : 0 - val;
+              this.infix.pop();
+              this.infix.push(this.lastVal = newVal);
 
+              return this.infix;
+            }
+
+            this.infix.push(this.lastVal = val);
+            return this.infix;
+          }
+          // 更改操作
+          else if (type === 'change') {
+            this.infix.pop();
+            this.infix.push(this.lastVal = val);
+            return this.infix;
+          }
+        },
+        // 初始化 ，将存储表达式的都置空
+        resetData: function () {
+          // 中缀表达式
+          this.infix = [];
+          // 后缀表达式
+          this.suffix = [];
+          // 后缀表达式计算的结果
+          this.result = [];
+          // 前一个存入的值
+          this.lastVal = 0;
+          // this.curDot = false;
+        },
+        // 判断是否为运算符
+        isSign: function (op) {
+          return op && this.opArr.indexOf(op) !== -1;
+        },
+        // 计算
+        calculate: function (type) {
+          this.infixToSuffix();
+          const suffixRe = this.calcSuffix();
+
+          if (suffixRe) {
+            this.numText.innerHTML = suffixRe;
+            // 如果直接等号
+            if (type === '=') {
+              // 设置为以计算
+              this.calcDone = true;
+              this.lastVal = suffixRe;
             }
           }
         },
-
-        isSign: function (op) {
-          return op && this.opArr.indexOf(op) !== -1;
+        // 判断运算符的优先级
+        priority: function (a, b) {
+          return (a === "+" || a === '-') && (b === '×' || b === '÷');
+        },
+        // 中缀表达式转为后缀表达式
+        infixToSuffix: function () {
+          //临时存放运算符
+          const temp = [];
+          // 初始化
+          this.suffix = [];
+          //遍历中缀表达式中的数据
+          this.infix.forEach((item) => {
+            // 数值就直接压入数组
+            if (!this.isSign(item)) {
+              this.suffix.push(item);
+            }
+            // 如果不是数字---运算符
+            else {
+              // 如果temp为空时
+              if (!temp.length) {
+                // 判断运算符的优先级
+                temp.push(item);
+              }
+              else {
+                // 将临时数组中的运算符给opTo
+                let opTop = temp[temp.length - 1];
+                if (!this.priority(opTop, item)) {
+                  while (temp.length && !this.priority(opTop, item)) {
+                    this.suffix.push(temp.pop());
+                    opTop = temp[temp.length - 1];
+                  }
+                }
+                //压入当前的运算符
+                temp.push(item);
+              }
+            }
+          })
+          // 压入剩余的符号
+          while (temp.length) {
+            this.suffix.push(temp.pop());
+          }
+        },
+        // 后缀表达式计算
+        calcSuffix: function () {
+          // 初始化结果数组
+          this.result = [];
+          this.suffix.forEach((item) => {
+            // 数字存到result
+            if (!this.isSign(item)) {
+              this.result.push(item)
+            }
+            else {
+              // 遇到运算符时，从中去除两个数字进行计算，并将运算符存到数组result
+              this.result.push(this.opCalc(this.result.pop(), this.result.pop(), item))
+            }
+          })
+          // result中只剩最后一个值，即为结果
+          return this.result[0];
+        },
+        // 符号计算
+        opCalc: function (a, b, op) {
+          switch (op) {
+            case '+': return b + a;
+            case '-': return b - a;
+            case '×': return b * a;
+            case '÷': return b / a;
+          }
         }
       }
 
@@ -272,7 +485,7 @@ export default {
   margin: 10px 0;
   font-size: 48px;
   font-weight: 500;
-  color: black;
+  color: #000000;
 }
 .content span {
   display: block;
@@ -284,6 +497,7 @@ export default {
   width: 360px;
   display: flex;
   justify-content: space-between;
+  color: #a3a3a3;
 }
 .sign div {
   width: 70px;
